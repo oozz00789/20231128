@@ -1,0 +1,49 @@
+import cv2
+import HandTrackingModule as htm
+import webbrowser
+import time
+import pyautogui
+
+cap = cv2.VideoCapture(0)
+cap.set(3, 640)
+cap.set(4, 480)
+
+
+detector = htm.HandDetector(maxHands=1)
+
+last_open_time = time.time()
+cooldown_duration = 5 
+
+while True: 
+    
+    success, img = cap.read()
+    hands, img = detector.findHands(img, draw=True)
+
+    if hands:
+        
+        hand1 = hands[0]
+        fingers = detector.fingersUp(hand1)
+
+        if fingers[1] == 1 and fingers[2] == 1 and fingers[3] == 0 and fingers[4] == 0 and time.time() - last_open_time >= cooldown_duration:
+            print("yt.")
+            last_open_time = time.time()
+            webbrowser.open("https://www.youtube.com")
+
+        
+        elif fingers[1] and fingers[2] == 0 and time.time() - last_open_time >= cooldown_duration:
+            print("cjcu")
+            last_open_time = time.time()
+            webbrowser.open("https://www.cjcu.edu.tw/")
+
+        if all(fingers) and time.time() - last_open_time >= cooldown_duration:
+            print("Closing the website...")
+            pyautogui.hotkey('ctrl', 'w')
+            last_open_time = time.time()
+
+    cv2.imshow("Hand Tracking", img)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
